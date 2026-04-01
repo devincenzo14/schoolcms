@@ -1,0 +1,115 @@
+import dbConnect from "@/lib/db";
+import AboutMember from "@/models/AboutMember";
+import { IAboutMember } from "@/types";
+import Image from "next/image";
+import { FiMapPin, FiPhone, FiMail } from "react-icons/fi";
+
+export const dynamic = "force-dynamic";
+
+export default async function AboutPage() {
+  await dbConnect();
+  const members = await AboutMember.find().sort({ type: 1, order: 1 }).lean();
+  const data: IAboutMember[] = JSON.parse(JSON.stringify(members));
+
+  const teachers = data.filter((m) => m.type === "teacher");
+
+  return (
+    <div>
+      {/* Hero Banner */}
+      <section className="bg-gradient-to-br from-blue-700 via-blue-600 to-blue-800 text-white py-16 sm:py-24">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <Image
+            src="/logo.png"
+            alt="Edulinks Learning Center"
+            width={80}
+            height={80}
+            className="mx-auto mb-6 rounded-2xl shadow-lg"
+          />
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+            Edulinks Learning Center
+          </h1>
+          <p className="text-blue-100 text-base sm:text-lg max-w-3xl mx-auto leading-relaxed mb-8">
+            Cebu&apos;s leading provider of quality, customized &amp; caring education:
+            <br className="hidden sm:block" />
+            <span className="font-semibold text-white">
+              Complete Basic Education &amp; Academic Enrichment Programs
+            </span>
+          </p>
+
+          {/* Contact Info */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-sm">
+            <div className="flex items-center gap-2">
+              <FiMapPin className="text-blue-200 flex-shrink-0" size={16} />
+              <span className="text-blue-100">Deca Homes, Tunghaan, Minglanilla, Philippines, 6046</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FiPhone className="text-blue-200 flex-shrink-0" size={16} />
+              <span className="text-blue-100">0910 769 4124</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FiMail className="text-blue-200 flex-shrink-0" size={16} />
+              <span className="text-blue-100">edulinks.ph@gmail.com</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Teachers Section */}
+      <section className="py-12 sm:py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
+              Our Teachers
+            </h2>
+            <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base">
+              Dedicated educators committed to nurturing every child&apos;s potential.
+            </p>
+          </div>
+
+          {teachers.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {teachers.map((member) => (
+                <div
+                  key={member._id}
+                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  {member.imageUrl ? (
+                    <div className="relative w-full h-52">
+                      <Image
+                        src={member.imageUrl}
+                        alt={member.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-full h-52 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+                      <span className="text-5xl font-bold text-blue-300">
+                        {member.name.charAt(0)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="p-5 text-center">
+                    <h3 className="font-bold text-gray-900 text-lg">{member.name}</h3>
+                    <p className="text-blue-600 text-sm font-medium mt-0.5">
+                      {member.role}
+                    </p>
+                    {member.bio && (
+                      <p className="text-gray-500 text-sm mt-2 line-clamp-3 leading-relaxed">
+                        {member.bio}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-400">Teacher information coming soon.</p>
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
