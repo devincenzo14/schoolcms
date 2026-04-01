@@ -20,7 +20,7 @@ export default function TestimonialSection({
             What Parents Say
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Trusted by families across Minglanilla and Cebu.
+            Trusted by families from Cebu and across all over the world.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

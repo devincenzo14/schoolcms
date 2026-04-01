@@ -161,7 +161,7 @@ export default function Chatbot() {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold text-sm">EduBot</p>
+              <p className="text-white font-semibold text-sm">EduAssist</p>
               <p className="text-blue-100 text-xs">Edulinks Learning Center</p>
             </div>
             <button

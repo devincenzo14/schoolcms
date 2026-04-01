@@ -1,6 +1,7 @@
 import Navbar from "@/components/public/Navbar";
 import Footer from "@/components/public/Footer";
 import Chatbot from "@/components/public/Chatbot";
+import PageTransition from "@/components/public/PageTransition";
 
 export default function PublicLayout({
   children,
@@ -10,7 +11,9 @@ export default function PublicLayout({
   return (
     <>
       <Navbar />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1">
+        <PageTransition>{children}</PageTransition>
+      </main>
       <Footer />
       <Chatbot />
     </>

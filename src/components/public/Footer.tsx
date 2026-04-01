@@ -85,6 +85,11 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-10 pt-8 text-center text-sm text-gray-500">
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-3">
+            <Link href="/terms" className="hover:text-white transition-colors">Terms &amp; Conditions</Link>
+            <span className="text-gray-700">|</span>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+          </div>
           <p>
             &copy; {new Date().getFullYear()} Edulinks Learning Center. All rights
             reserved.
