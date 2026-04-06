@@ -1,4 +1,4 @@
-# Edulinks Learning Center — School CMS
+# School CMS
 
 A production-ready school management system with a dynamic public website and admin dashboard, built with Next.js 16, MongoDB, and Tailwind CSS.
 
