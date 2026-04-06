@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import Image from "next/image";
 import Modal from "@/components/dashboard/Modal";
 import ConfirmDialog from "@/components/dashboard/ConfirmDialog";
@@ -8,6 +8,7 @@ import ImageUpload from "@/components/dashboard/ImageUpload";
 import { useToast } from "@/components/dashboard/ToastProvider";
 import { ICarousel } from "@/types";
 import { FiPlus, FiEdit2, FiTrash2, FiArrowUp, FiArrowDown, FiImage } from "react-icons/fi";
+import { apiFetch, useRefreshData } from "@/lib/hooks";
 
 export default function CarouselManagerPage() {
   const [slides, setSlides] = useState<ICarousel[]>([]);
@@ -29,7 +30,7 @@ export default function CarouselManagerPage() {
 
   const fetchSlides = async () => {
     try {
-      const res = await fetch("/api/carousel");
+      const res = await apiFetch("/api/carousel");
       const data = await res.json();
       if (data.success) setSlides(data.data);
     } catch {
@@ -39,10 +40,10 @@ export default function CarouselManagerPage() {
     }
   };
 
-  useEffect(() => {
+  useRefreshData(useCallback(() => {
     fetchSlides();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []));
 
   const openAddModal = () => {
     setEditingSlide(null);
@@ -83,7 +84,7 @@ export default function CarouselManagerPage() {
         : "/api/carousel";
       const method = editingSlide ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -111,7 +112,7 @@ export default function CarouselManagerPage() {
     if (!deleteTarget) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/carousel/${deleteTarget._id}`, {
+      const res = await apiFetch(`/api/carousel/${deleteTarget._id}`, {
         method: "DELETE",
       });
       const data = await res.json();
@@ -140,7 +141,7 @@ export default function CarouselManagerPage() {
     setSlides(newSlides);
 
     try {
-      await fetch("/api/carousel/reorder", {
+      await apiFetch("/api/carousel/reorder", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ items }),

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { ToastProvider } from "@/components/dashboard/ToastProvider";
+import { apiFetch } from "@/lib/hooks";
 
 interface UserData {
   userId: string;
@@ -24,7 +25,7 @@ export default function DashboardLayout({
   const router = useRouter();
 
   useEffect(() => {
-    fetch("/api/auth/me")
+    apiFetch("/api/auth/me")
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import Image from "next/image";
 import Modal from "@/components/dashboard/Modal";
 import ConfirmDialog from "@/components/dashboard/ConfirmDialog";
 import { useToast } from "@/components/dashboard/ToastProvider";
 import { ITestimonial } from "@/types";
 import { FiPlus, FiEdit2, FiTrash2, FiUpload, FiX, FiStar, FiEye, FiEyeOff } from "react-icons/fi";
+import { apiFetch, useRefreshData } from "@/lib/hooks";
 
 export default function TestimonialsManagerPage() {
   const [testimonials, setTestimonials] = useState<ITestimonial[]>([]);
@@ -29,7 +30,7 @@ export default function TestimonialsManagerPage() {
 
   const fetchTestimonials = async () => {
     try {
-      const res = await fetch("/api/testimonials");
+      const res = await apiFetch("/api/testimonials");
       const data = await res.json();
       if (data.success) setTestimonials(data.data);
     } catch {
@@ -39,10 +40,10 @@ export default function TestimonialsManagerPage() {
     }
   };
 
-  useEffect(() => {
+  useRefreshData(useCallback(() => {
     fetchTestimonials();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []));
 
   const openAddModal = () => {
     setEditing(null);
@@ -79,7 +80,7 @@ export default function TestimonialsManagerPage() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const res = await apiFetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (data.success) {
         setForm((prev) => ({ ...prev, imageUrl: data.data.url }));
@@ -105,7 +106,7 @@ export default function TestimonialsManagerPage() {
       const url = editing ? `/api/testimonials/${editing._id}` : "/api/testimonials";
       const method = editing ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -130,7 +131,7 @@ export default function TestimonialsManagerPage() {
     if (!deleteTarget) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/testimonials/${deleteTarget._id}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/testimonials/${deleteTarget._id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
         showToast("Testimonial deleted!", "success");
@@ -148,7 +149,7 @@ export default function TestimonialsManagerPage() {
 
   const togglePublish = async (t: ITestimonial) => {
     try {
-      const res = await fetch(`/api/testimonials/${t._id}`, {
+      const res = await apiFetch(`/api/testimonials/${t._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isPublished: !t.isPublished }),

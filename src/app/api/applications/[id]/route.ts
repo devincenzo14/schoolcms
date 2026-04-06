@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import StudentApplication from "@/models/StudentApplication";
+import User from "@/models/User";
 import { getAuthUser } from "@/lib/auth";
 import { checkPermission } from "@/lib/rbac";
 
@@ -46,6 +47,30 @@ export async function PATCH(
         { success: false, error: "Application not found" },
         { status: 404 }
       );
+    }
+
+    // When approved, auto-populate matching user's personal info from application
+    if (status === "approved" && application.email) {
+      const studentUser = await User.findOne({
+        email: application.email.toLowerCase(),
+        role: "student",
+      });
+      if (studentUser) {
+        studentUser.firstName = application.firstName || studentUser.firstName;
+        studentUser.lastName = application.lastName || studentUser.lastName;
+        studentUser.middleName = application.middleName || studentUser.middleName;
+        studentUser.suffix = application.suffix || studentUser.suffix;
+        studentUser.age = application.age || studentUser.age;
+        studentUser.dateOfBirth = application.dateOfBirth || studentUser.dateOfBirth;
+        studentUser.gender = application.gender || studentUser.gender;
+        studentUser.address = application.address || studentUser.address;
+        studentUser.gradeLevel = application.gradeLevel || studentUser.gradeLevel;
+        studentUser.parentGuardianName = application.parentGuardianName || studentUser.parentGuardianName;
+        studentUser.parentGuardianRelationship = application.parentGuardianRelationship || studentUser.parentGuardianRelationship;
+        studentUser.contactNumber = application.contactNumber || studentUser.contactNumber;
+        studentUser.previousSchool = application.previousSchool || studentUser.previousSchool;
+        await studentUser.save();
+      }
     }
 
     return NextResponse.json({ success: true, data: application });

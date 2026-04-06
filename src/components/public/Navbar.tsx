@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { FiMenu, FiX, FiGrid, FiArrowRight } from "react-icons/fi";
+import { apiFetch } from "@/lib/hooks";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -22,7 +23,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   useEffect(() => {
-    fetch("/api/auth/me")
+    apiFetch("/api/auth/me")
       .then((res) => res.json())
       .then((data) => {
         setIsLoggedIn(data.success === true);
@@ -49,8 +50,9 @@ export default function Navbar() {
               <span className="text-xl font-bold text-gray-900 hidden sm:inline">
                 Edulinks <span className="text-blue-600">Learning Center</span>
               </span>
-              <span className="text-xl font-bold text-gray-900 sm:hidden">
-                Edulinks
+              <span className="font-bold text-gray-900 sm:hidden flex flex-col leading-tight">
+                <span className="text-lg">Edulinks</span>
+                <span className="text-xs text-blue-600">Learning Center</span>
               </span>
             </Link>
           </div>

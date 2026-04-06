@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { FiClipboard, FiMessageSquare, FiBookOpen, FiFileText, FiArrowRight } from "react-icons/fi";
+import { apiFetch, useRefreshData } from "@/lib/hooks";
 
 interface Stats {
   grades: number;
@@ -15,14 +16,14 @@ export default function StudentDashboardPage() {
   const [userName, setUserName] = useState("");
   const [stats, setStats] = useState<Stats>({ grades: 0, announcements: 0, classes: 0, averageScore: 0 });
 
-  useEffect(() => {
-    fetch("/api/auth/me")
+  useRefreshData(useCallback(() => {
+    apiFetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setUserName(d.data.name);
       });
 
-    fetch("/api/grades")
+    apiFetch("/api/grades")
       .then((r) => r.json())
       .then((d) => {
         if (d.success) {
@@ -32,18 +33,18 @@ export default function StudentDashboardPage() {
         }
       });
 
-    fetch("/api/announcements")
+    apiFetch("/api/announcements")
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setStats((prev) => ({ ...prev, announcements: d.data.length }));
       });
 
-    fetch("/api/classes")
+    apiFetch("/api/classes")
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setStats((prev) => ({ ...prev, classes: d.data.length }));
       });
-  }, []);
+  }, []));
 
   const cards = [
     { title: "My Grades", value: stats.grades, desc: `Average: ${stats.averageScore}%`, icon: <FiClipboard size={22} className="text-blue-600" />, color: "bg-blue-50", href: "/student/grades" },

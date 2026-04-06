@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import Image from "next/image";
 import Modal from "@/components/dashboard/Modal";
 import ConfirmDialog from "@/components/dashboard/ConfirmDialog";
@@ -8,6 +8,7 @@ import ImageUpload from "@/components/dashboard/ImageUpload";
 import { useToast } from "@/components/dashboard/ToastProvider";
 import { IProgram } from "@/types";
 import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { apiFetch, useRefreshData } from "@/lib/hooks";
 
 export default function ProgramsManagerPage() {
   const [programs, setPrograms] = useState<IProgram[]>([]);
@@ -26,7 +27,7 @@ export default function ProgramsManagerPage() {
 
   const fetchPrograms = async () => {
     try {
-      const res = await fetch("/api/programs");
+      const res = await apiFetch("/api/programs");
       const data = await res.json();
       if (data.success) setPrograms(data.data);
     } catch {
@@ -36,10 +37,10 @@ export default function ProgramsManagerPage() {
     }
   };
 
-  useEffect(() => {
+  useRefreshData(useCallback(() => {
     fetchPrograms();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []));
 
   const openAddModal = () => {
     setEditing(null);
@@ -68,7 +69,7 @@ export default function ProgramsManagerPage() {
       const url = editing ? `/api/programs/${editing._id}` : "/api/programs";
       const method = editing ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -93,7 +94,7 @@ export default function ProgramsManagerPage() {
     if (!deleteTarget) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/programs/${deleteTarget._id}`, {
+      const res = await apiFetch(`/api/programs/${deleteTarget._id}`, {
         method: "DELETE",
       });
       const data = await res.json();

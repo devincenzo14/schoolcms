@@ -9,6 +9,7 @@ import {
   FiMessageSquare,
   FiBookOpen,
   FiFileText,
+  FiUser,
   FiX,
   FiExternalLink,
 } from "react-icons/fi";
@@ -24,6 +25,7 @@ const menuItems = [
   { href: "/student/subjects", label: "My Subjects", icon: FiBookOpen },
   { href: "/student/announcements", label: "Announcements", icon: FiMessageSquare },
   { href: "/student/enrollment", label: "Enrollment Status", icon: FiFileText },
+  { href: "/student/profile", label: "My Profile", icon: FiUser },
 ];
 
 export default function StudentSidebar({ isOpen, onClose }: StudentSidebarProps) {

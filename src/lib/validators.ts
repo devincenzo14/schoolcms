@@ -17,6 +17,19 @@ export const userUpdateSchema = z.object({
   email: z.string().email().optional(),
   password: z.string().min(6).optional(),
   role: z.enum(["admin", "principal", "teacher", "student"]).optional(),
+  firstName: z.string().max(100).optional(),
+  lastName: z.string().max(100).optional(),
+  middleName: z.string().max(100).optional(),
+  suffix: z.string().max(10).optional(),
+  age: z.number().min(0).max(100).optional().nullable(),
+  dateOfBirth: z.string().optional().nullable(),
+  gender: z.string().max(20).optional(),
+  address: z.string().max(500).optional(),
+  gradeLevel: z.string().max(50).optional(),
+  parentGuardianName: z.string().max(200).optional(),
+  parentGuardianRelationship: z.string().max(50).optional(),
+  contactNumber: z.string().max(20).optional(),
+  previousSchool: z.string().max(200).optional(),
 });
 
 export const carouselSchema = z.object({

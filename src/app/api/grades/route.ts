@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
 
     if (user.role === "student") {
       filter.studentId = user.userId;
+      filter.status = "approved";
     } else if (user.role === "teacher") {
       filter.teacherId = user.userId;
     } else if (studentId) {
@@ -44,6 +45,7 @@ export async function GET(req: NextRequest) {
     const grades = await Grade.find(filter)
       .populate("studentId", "name email")
       .populate("teacherId", "name")
+      .populate("approvedBy", "name")
       .sort({ createdAt: -1 });
 
     return NextResponse.json({ success: true, data: grades });

@@ -7,6 +7,10 @@ export interface IGradeDocument extends Document {
   score: number;
   term: "1st" | "2nd" | "3rd" | "4th" | "final";
   remarks: string;
+  status: "approved" | "pending" | "rejected";
+  previousScore: number | null;
+  approvedBy: mongoose.Types.ObjectId | null;
+  requestedAt: Date | null;
   createdAt: Date;
 }
 
@@ -22,6 +26,14 @@ const GradeSchema = new Schema<IGradeDocument>(
       required: true,
     },
     remarks: { type: String, trim: true, default: "" },
+    status: {
+      type: String,
+      enum: ["approved", "pending", "rejected"],
+      default: "approved",
+    },
+    previousScore: { type: Number, default: null },
+    approvedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    requestedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

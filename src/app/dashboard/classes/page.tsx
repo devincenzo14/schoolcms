@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import Modal from "@/components/dashboard/Modal";
 import ConfirmDialog from "@/components/dashboard/ConfirmDialog";
 import { useToast } from "@/components/dashboard/ToastProvider";
 import { IClass } from "@/types";
 import { FiPlus, FiEdit2, FiTrash2, FiUsers } from "react-icons/fi";
+import { apiFetch, useRefreshData } from "@/lib/hooks";
 
 interface UserOption {
   _id: string;
@@ -36,7 +37,7 @@ export default function ClassesManagerPage() {
 
   const fetchClasses = async () => {
     try {
-      const res = await fetch("/api/classes");
+      const res = await apiFetch("/api/classes");
       const data = await res.json();
       if (data.success) setClasses(data.data);
     } catch {
@@ -46,19 +47,19 @@ export default function ClassesManagerPage() {
     }
   };
 
-  useEffect(() => {
+  useRefreshData(useCallback(() => {
     fetchClasses();
-    fetch("/api/auth/me")
+    apiFetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setRole(d.data.role);
       });
-    fetch("/api/students")
+    apiFetch("/api/students")
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setStudents(d.data);
       });
-    fetch("/api/users")
+    apiFetch("/api/users")
       .then((r) => r.json())
       .then((d) => {
         if (d.success)
@@ -66,7 +67,7 @@ export default function ClassesManagerPage() {
       })
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []));
 
   const canCreate = role === "admin" || role === "principal";
 
@@ -101,7 +102,7 @@ export default function ClassesManagerPage() {
       const url = editing ? `/api/classes/${editing._id}` : "/api/classes";
       const method = editing ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -125,7 +126,7 @@ export default function ClassesManagerPage() {
     if (!deleteTarget) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/classes/${deleteTarget._id}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/classes/${deleteTarget._id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
         showToast("Class deleted!", "success");

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import Modal from "@/components/dashboard/Modal";
 import { useToast } from "@/components/dashboard/ToastProvider";
 import { IStudentApplication } from "@/types";
 import { FiCheck, FiX, FiEye } from "react-icons/fi";
+import { apiFetch, useRefreshData } from "@/lib/hooks";
 
 export default function ApplicationsManagerPage() {
   const [applications, setApplications] = useState<IStudentApplication[]>([]);
@@ -15,7 +16,7 @@ export default function ApplicationsManagerPage() {
 
   const fetchApplications = async () => {
     try {
-      const res = await fetch("/api/applications");
+      const res = await apiFetch("/api/applications");
       const data = await res.json();
       if (data.success) setApplications(data.data);
     } catch {
@@ -25,14 +26,14 @@ export default function ApplicationsManagerPage() {
     }
   };
 
-  useEffect(() => {
+  useRefreshData(useCallback(() => {
     fetchApplications();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []));
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      const res = await fetch(`/api/applications/${id}`, {
+      const res = await apiFetch(`/api/applications/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),

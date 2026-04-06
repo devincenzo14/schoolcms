@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import ConfirmDialog from "@/components/dashboard/ConfirmDialog";
 import { useToast } from "@/components/dashboard/ToastProvider";
 import { IGallery } from "@/types";
 import { FiPlus, FiTrash2, FiUpload, FiCalendar } from "react-icons/fi";
+import { apiFetch, useRefreshData } from "@/lib/hooks";
 
 const CATEGORIES = ["Nursery", "Kinder", "Preschool"] as const;
 
@@ -16,7 +17,7 @@ export default function EventsManagerPage() {
   const [deleteTarget, setDeleteTarget] = useState<IGallery | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [caption, setCaption] = useState("");
-  const [category, setCategory] = useState<string>("Preschool");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(["Preschool"]);
   const [filterCategory, setFilterCategory] = useState<string>("All");
   const [showUploadForm, setShowUploadForm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -25,7 +26,7 @@ export default function EventsManagerPage() {
   const fetchImages = async () => {
     try {
       const query = filterCategory !== "All" ? `?category=${filterCategory}` : "";
-      const res = await fetch(`/api/gallery${query}`);
+      const res = await apiFetch(`/api/gallery${query}`);
       const data = await res.json();
       if (data.success) setImages(data.data);
     } catch {
@@ -40,9 +41,18 @@ export default function EventsManagerPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterCategory]);
 
+  useRefreshData(useCallback(() => {
+    fetchImages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []));
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+    if (selectedCategories.length === 0) {
+      showToast("Please select at least one category", "error");
+      return;
+    }
 
     setUploading(true);
     let successCount = 0;
@@ -53,25 +63,27 @@ export default function EventsManagerPage() {
         const formData = new FormData();
         formData.append("file", file);
 
-        const uploadRes = await fetch("/api/upload", {
+        const uploadRes = await apiFetch("/api/upload", {
           method: "POST",
           body: formData,
         });
         const uploadData = await uploadRes.json();
 
         if (uploadData.success) {
-          // Create gallery entry
-          const galleryRes = await fetch("/api/gallery", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              imageUrl: uploadData.data.url,
-              caption: caption,
-              category: category,
-            }),
-          });
-          const galleryData = await galleryRes.json();
-          if (galleryData.success) successCount++;
+          // Create gallery entry for each selected category
+          for (const cat of selectedCategories) {
+            const galleryRes = await apiFetch("/api/gallery", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                imageUrl: uploadData.data.url,
+                caption: caption,
+                category: cat,
+              }),
+            });
+            const galleryData = await galleryRes.json();
+            if (galleryData.success) successCount++;
+          }
         }
       } catch {
         // Continue with other files
@@ -87,7 +99,7 @@ export default function EventsManagerPage() {
 
     setUploading(false);
     setCaption("");
-    setCategory("Preschool");
+    setSelectedCategories(["Preschool"]);
     setShowUploadForm(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -96,7 +108,7 @@ export default function EventsManagerPage() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/gallery/${deleteTarget._id}`, {
+      const res = await apiFetch(`/api/gallery/${deleteTarget._id}`, {
         method: "DELETE",
       });
       const data = await res.json();
@@ -154,18 +166,43 @@ export default function EventsManagerPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category *
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Categories *
                 </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                >
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.length === CATEGORIES.length}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedCategories([...CATEGORIES]);
+                        } else {
+                          setSelectedCategories([]);
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Select All</span>
+                  </label>
                   {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <label key={c} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.includes(c)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedCategories([...selectedCategories, c]);
+                          } else {
+                            setSelectedCategories(selectedCategories.filter((s) => s !== c));
+                          }
+                        }}
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{c}</span>
+                    </label>
                   ))}
-                </select>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import StatCard from "@/components/dashboard/StatCard";
-import { FiImage, FiBookOpen, FiCamera, FiMessageSquare, FiFileText, FiUsers, FiArrowRight } from "react-icons/fi";
+import { FiImage, FiBookOpen, FiMessageSquare, FiFileText, FiUsers, FiArrowRight } from "react-icons/fi";
+import { apiFetch, useRefreshData } from "@/lib/hooks";
 
 interface Stats {
   carousel: number;
   programs: number;
-  gallery: number;
   announcements: number;
   applications: number;
   users: number;
@@ -18,7 +18,6 @@ export default function DashboardHomePage() {
   const [stats, setStats] = useState<Stats>({
     carousel: 0,
     programs: 0,
-    gallery: 0,
     announcements: 0,
     applications: 0,
     users: 0,
@@ -26,8 +25,8 @@ export default function DashboardHomePage() {
   const [role, setRole] = useState("");
   const [userName, setUserName] = useState("");
 
-  useEffect(() => {
-    fetch("/api/auth/me")
+  useRefreshData(useCallback(() => {
+    apiFetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => {
         if (d.success) {
@@ -39,12 +38,11 @@ export default function DashboardHomePage() {
     const endpoints = [
       { key: "carousel", url: "/api/carousel" },
       { key: "programs", url: "/api/programs" },
-      { key: "gallery", url: "/api/gallery" },
       { key: "announcements", url: "/api/announcements" },
     ];
 
     endpoints.forEach(({ key, url }) => {
-      fetch(url)
+      apiFetch(url)
         .then((r) => r.json())
         .then((d) => {
           if (d.success) {
@@ -53,23 +51,22 @@ export default function DashboardHomePage() {
         });
     });
 
-    fetch("/api/applications")
+    apiFetch("/api/applications")
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setStats((prev) => ({ ...prev, applications: d.data.length }));
       });
 
-    fetch("/api/users")
+    apiFetch("/api/users")
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setStats((prev) => ({ ...prev, users: d.data.length }));
       });
-  }, []);
+  }, []));
 
   const statCards = [
     { title: "Carousel Slides", value: stats.carousel, icon: <FiImage size={22} className="text-purple-600" />, color: "bg-purple-50", href: "/dashboard/carousel", roles: ["admin", "principal"] },
     { title: "Programs", value: stats.programs, icon: <FiBookOpen size={22} className="text-blue-600" />, color: "bg-blue-50", href: "/dashboard/programs", roles: ["admin", "principal", "teacher"] },
-    { title: "Gallery Images", value: stats.gallery, icon: <FiCamera size={22} className="text-emerald-600" />, color: "bg-emerald-50", href: "/dashboard/gallery", roles: ["admin", "principal", "teacher"] },
     { title: "Announcements", value: stats.announcements, icon: <FiMessageSquare size={22} className="text-amber-600" />, color: "bg-amber-50", href: "/dashboard/announcements", roles: ["admin", "principal"] },
     { title: "Applications", value: stats.applications, icon: <FiFileText size={22} className="text-cyan-600" />, color: "bg-cyan-50", href: "/dashboard/applications", roles: ["admin", "principal"] },
     { title: "Users", value: stats.users, icon: <FiUsers size={22} className="text-rose-600" />, color: "bg-rose-50", href: "/dashboard/users", roles: ["admin"] },
@@ -130,18 +127,6 @@ export default function DashboardHomePage() {
                 <FiBookOpen className="text-blue-600" size={18} />
               </div>
               <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700">Manage Programs</span>
-            </div>
-            <FiArrowRight className="text-gray-300 group-hover:text-blue-500 transition-colors" size={16} />
-          </Link>
-          <Link
-            href="/dashboard/gallery"
-            className="flex items-center justify-between p-4 rounded-xl border border-gray-200 hover:bg-blue-50 hover:border-blue-200 transition-all group"
-          >
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
-                <FiCamera className="text-emerald-600" size={18} />
-              </div>
-              <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700">Manage Gallery</span>
             </div>
             <FiArrowRight className="text-gray-300 group-hover:text-blue-500 transition-colors" size={16} />
           </Link>

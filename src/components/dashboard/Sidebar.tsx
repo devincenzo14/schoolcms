@@ -1,8 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { apiFetch } from "@/lib/hooks";
 import {
   FiHome,
   FiImage,
@@ -17,6 +19,8 @@ import {
   FiLayers,
   FiInfo,
   FiStar,
+  FiHelpCircle,
+  FiBriefcase,
 } from "react-icons/fi";
 
 interface SidebarProps {
@@ -26,22 +30,40 @@ interface SidebarProps {
 }
 
 const allMenuItems = [
-  { href: "/dashboard", label: "Dashboard", icon: FiHome, roles: ["admin", "principal", "teacher"] },
-  { href: "/dashboard/carousel", label: "Carousel", icon: FiImage, roles: ["admin", "principal"] },
-  { href: "/dashboard/programs", label: "Programs", icon: FiBookOpen, roles: ["admin", "principal", "teacher"] },
-  { href: "/dashboard/events", label: "Events", icon: FiCalendar, roles: ["admin", "principal", "teacher"] },
-  { href: "/dashboard/announcements", label: "Announcements", icon: FiMessageSquare, roles: ["admin", "principal", "teacher"] },
-  { href: "/dashboard/about", label: "About", icon: FiInfo, roles: ["admin"] },
-  { href: "/dashboard/testimonials", label: "Testimonials", icon: FiStar, roles: ["admin"] },
-  { href: "/dashboard/applications", label: "Applications", icon: FiFileText, roles: ["admin", "principal"] },
-  { href: "/dashboard/classes", label: "Classes", icon: FiLayers, roles: ["admin", "principal", "teacher"] },
-  { href: "/dashboard/grades", label: "Grades", icon: FiClipboard, roles: ["admin", "principal", "teacher"] },
-  { href: "/dashboard/students", label: "Students", icon: FiUsers, roles: ["admin", "principal", "teacher"] },
-  { href: "/dashboard/users", label: "Users", icon: FiUsers, roles: ["admin"] },
+  { href: "/dashboard", label: "Dashboard", icon: FiHome, roles: ["admin", "principal", "teacher"], key: "" },
+  { href: "/dashboard/carousel", label: "Carousel", icon: FiImage, roles: ["admin", "principal"], key: "" },
+  { href: "/dashboard/programs", label: "Programs", icon: FiBookOpen, roles: ["admin", "principal", "teacher"], key: "" },
+  { href: "/dashboard/events", label: "Events", icon: FiCalendar, roles: ["admin", "principal", "teacher"], key: "" },
+  { href: "/dashboard/announcements", label: "Announcements", icon: FiMessageSquare, roles: ["admin", "principal", "teacher"], key: "announcements" },
+  { href: "/dashboard/about", label: "About", icon: FiInfo, roles: ["admin"], key: "" },
+  { href: "/dashboard/testimonials", label: "Testimonials", icon: FiStar, roles: ["admin"], key: "" },
+  { href: "/dashboard/applications", label: "Applications", icon: FiFileText, roles: ["admin", "principal"], key: "applications" },
+  { href: "/dashboard/classes", label: "Classes", icon: FiLayers, roles: ["admin", "principal", "teacher"], key: "" },
+  { href: "/dashboard/grades", label: "Grades", icon: FiClipboard, roles: ["admin", "principal", "teacher"], key: "grades" },
+  { href: "/dashboard/teachers", label: "Teachers", icon: FiBriefcase, roles: ["admin", "principal"], key: "" },
+  { href: "/dashboard/students", label: "Students", icon: FiUsers, roles: ["admin", "principal", "teacher"], key: "" },
+  { href: "/dashboard/users", label: "Users", icon: FiUsers, roles: ["admin"], key: "" },
+  { href: "/dashboard/instructions", label: "Help Page", icon: FiHelpCircle, roles: ["admin", "principal", "teacher"], key: "" },
 ];
 
 export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const [badges, setBadges] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const fetchBadges = () => {
+      apiFetch("/api/notifications")
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.success) setBadges(d.data);
+        })
+        .catch(() => {});
+    };
+
+    fetchBadges();
+    const interval = setInterval(fetchBadges, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const menuItems = allMenuItems.filter((item) => item.roles.includes(role));
 
@@ -95,6 +117,7 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
               item.href === "/dashboard"
                 ? pathname === "/dashboard"
                 : pathname.startsWith(item.href);
+            const badgeCount = item.key ? badges[item.key] || 0 : 0;
 
             return (
               <Link
@@ -108,7 +131,12 @@ export default function Sidebar({ role, isOpen, onClose }: SidebarProps) {
                 }`}
               >
                 <Icon size={18} />
-                <span className="font-medium text-sm">{item.label}</span>
+                <span className="font-medium text-sm flex-1">{item.label}</span>
+                {badgeCount > 0 && (
+                  <span className="min-w-[20px] h-5 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5">
+                    {badgeCount > 99 ? "99+" : badgeCount}
+                  </span>
+                )}
               </Link>
             );
           })}

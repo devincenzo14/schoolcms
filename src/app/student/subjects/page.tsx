@@ -1,21 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { IClass } from "@/types";
 import { FiUsers, FiClock } from "react-icons/fi";
+import { apiFetch, useRefreshData } from "@/lib/hooks";
 
 export default function StudentSubjectsPage() {
   const [classes, setClasses] = useState<IClass[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("/api/classes")
+  useRefreshData(useCallback(() => {
+    apiFetch("/api/classes")
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setClasses(d.data);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, []));
 
   if (loading) {
     return (

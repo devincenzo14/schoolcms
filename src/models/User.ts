@@ -6,6 +6,20 @@ export interface IUserDocument extends Document {
   email: string;
   password: string;
   role: "admin" | "principal" | "teacher" | "student";
+  // Student personal info (from application form)
+  firstName?: string;
+  lastName?: string;
+  middleName?: string;
+  suffix?: string;
+  age?: number;
+  dateOfBirth?: Date;
+  gender?: string;
+  address?: string;
+  gradeLevel?: string;
+  parentGuardianName?: string;
+  parentGuardianRelationship?: string;
+  contactNumber?: string;
+  previousSchool?: string;
   createdAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
@@ -26,6 +40,20 @@ const UserSchema = new Schema<IUserDocument>(
       enum: ["admin", "principal", "teacher", "student"],
       default: "teacher",
     },
+    // Student personal info fields
+    firstName: { type: String, trim: true, default: "" },
+    lastName: { type: String, trim: true, default: "" },
+    middleName: { type: String, trim: true, default: "" },
+    suffix: { type: String, trim: true, default: "" },
+    age: { type: Number, min: 0, max: 100 },
+    dateOfBirth: { type: Date },
+    gender: { type: String, trim: true, default: "" },
+    address: { type: String, trim: true, default: "" },
+    gradeLevel: { type: String, trim: true, default: "" },
+    parentGuardianName: { type: String, trim: true, default: "" },
+    parentGuardianRelationship: { type: String, trim: true, default: "" },
+    contactNumber: { type: String, trim: true, default: "" },
+    previousSchool: { type: String, trim: true, default: "" },
   },
   { timestamps: true }
 );

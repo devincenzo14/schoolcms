@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import Modal from "@/components/dashboard/Modal";
 import ConfirmDialog from "@/components/dashboard/ConfirmDialog";
 import RichTextEditor from "@/components/dashboard/RichTextEditor";
@@ -8,6 +8,7 @@ import { useToast } from "@/components/dashboard/ToastProvider";
 import { IAnnouncement } from "@/types";
 import Image from "next/image";
 import { FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff, FiUpload, FiX, FiImage, FiClock } from "react-icons/fi";
+import { apiFetch, useRefreshData } from "@/lib/hooks";
 
 const ANNOUNCEMENT_CATEGORIES = ["All", "Nursery", "Kinder", "Preschool"] as const;
 
@@ -37,7 +38,7 @@ export default function AnnouncementsManagerPage() {
 
   const fetchAnnouncements = async () => {
     try {
-      const res = await fetch("/api/announcements/all");
+      const res = await apiFetch("/api/announcements/all");
       const data = await res.json();
       if (data.success) setAnnouncements(data.data);
     } catch {
@@ -47,10 +48,10 @@ export default function AnnouncementsManagerPage() {
     }
   };
 
-  useEffect(() => {
+  useRefreshData(useCallback(() => {
     fetchAnnouncements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []));
 
   const openAddModal = () => {
     setEditing(null);
@@ -140,7 +141,7 @@ export default function AnnouncementsManagerPage() {
         : "/api/announcements";
       const method = editing ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -171,7 +172,7 @@ export default function AnnouncementsManagerPage() {
     if (!deleteTarget) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/announcements/${deleteTarget._id}`, {
+      const res = await apiFetch(`/api/announcements/${deleteTarget._id}`, {
         method: "DELETE",
       });
       const data = await res.json();
@@ -191,7 +192,7 @@ export default function AnnouncementsManagerPage() {
 
   const togglePublish = async (announcement: IAnnouncement) => {
     try {
-      const res = await fetch(`/api/announcements/${announcement._id}`, {
+      const res = await apiFetch(`/api/announcements/${announcement._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isPublished: !announcement.isPublished }),

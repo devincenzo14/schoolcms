@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FiCheckCircle, FiClock, FiXCircle } from "react-icons/fi";
+import { apiFetch } from "@/lib/hooks";
 
 interface ApplicationData {
   _id: string;
@@ -18,7 +19,7 @@ export default function StudentEnrollmentPage() {
   const [email, setEmail] = useState("");
 
   useEffect(() => {
-    fetch("/api/auth/me")
+    apiFetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setEmail(d.data.email);
@@ -27,7 +28,7 @@ export default function StudentEnrollmentPage() {
 
   useEffect(() => {
     if (!email) return;
-    fetch("/api/applications")
+    apiFetch("/api/applications")
       .then((r) => r.json())
       .then((d) => {
         if (d.success) {

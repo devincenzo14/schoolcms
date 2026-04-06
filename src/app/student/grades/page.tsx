@@ -1,21 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { IGrade } from "@/types";
+import { apiFetch, useRefreshData } from "@/lib/hooks";
 
 export default function StudentGradesPage() {
   const [grades, setGrades] = useState<IGrade[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterTerm, setFilterTerm] = useState("all");
 
-  useEffect(() => {
-    fetch("/api/grades")
+  useRefreshData(useCallback(() => {
+    apiFetch("/api/grades")
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setGrades(d.data);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, []));
 
   const filtered = filterTerm === "all" ? grades : grades.filter((g) => g.term === filterTerm);
 

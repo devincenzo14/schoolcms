@@ -1,21 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { IAnnouncement } from "@/types";
 import Image from "next/image";
+import { apiFetch, useRefreshData } from "@/lib/hooks";
 
 export default function StudentAnnouncementsPage() {
   const [announcements, setAnnouncements] = useState<IAnnouncement[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("/api/announcements")
+  useRefreshData(useCallback(() => {
+    apiFetch("/api/announcements")
       .then((r) => r.json())
       .then((d) => {
         if (d.success) setAnnouncements(d.data);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, []));
 
   if (loading) {
     return (

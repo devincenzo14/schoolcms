@@ -3,6 +3,19 @@ export interface IUser {
   name: string;
   email: string;
   role: "admin" | "principal" | "teacher" | "student";
+  firstName?: string;
+  lastName?: string;
+  middleName?: string;
+  suffix?: string;
+  age?: number;
+  dateOfBirth?: string;
+  gender?: string;
+  address?: string;
+  gradeLevel?: string;
+  parentGuardianName?: string;
+  parentGuardianRelationship?: string;
+  contactNumber?: string;
+  previousSchool?: string;
   createdAt: string;
 }
 
@@ -103,6 +116,10 @@ export interface IGrade {
   score: number;
   term: "1st" | "2nd" | "3rd" | "4th" | "final";
   remarks: string;
+  status: "approved" | "pending" | "rejected";
+  previousScore: number | null;
+  approvedBy: string | { _id: string; name: string } | null;
+  requestedAt: string | null;
   createdAt: string;
 }
 
